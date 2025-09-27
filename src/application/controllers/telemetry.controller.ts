@@ -1,4 +1,17 @@
-import { Controller } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
+import { RegisterLocationDto } from 'src/domain/dto/register-location.dto';
+import { TelemetryService } from 'src/services/telemetry.service';
 
 @Controller('telemetry')
-export class TelemetryController {}
+export class TelemetryController {
+    constructor(private readonly telemetryService: TelemetryService) {}
+
+    @Post('register')
+    async registerLocation(@Body() registerLocationDto: RegisterLocationDto) {
+        return this.telemetryService.registerLocation(
+            registerLocationDto.vehicleId,
+            registerLocationDto.lng,
+            registerLocationDto.lat,
+        );
+    }
+}
