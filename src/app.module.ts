@@ -5,8 +5,7 @@ import { TelemetryModule } from './application/modules/telemetry.module';
 @Module({
   imports: [
     TelemetryModule,
-    MongooseModule.forRoot('mongodb://localhost:27017/telemetria', {
-      dbName: 'telemetry', // nombre de la base
+    MongooseModule.forRoot('mongodb://localhost:27017/telemetry', {
     }),
   ],
   controllers: [],
