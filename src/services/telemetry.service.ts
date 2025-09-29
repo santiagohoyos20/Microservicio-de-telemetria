@@ -15,14 +15,14 @@ export class TelemetryService {
     ) { }
 
     async registerLocation(vehicleId: string, lng: number, lat: number) {
-        // 1️⃣ Guardar en histórico
+        // Guardar en histórico
         await this.historyModel.create({
             vehicleId,
             location: { type: 'Point', coordinates: [lng, lat] },
             timestamp: new Date(),
         });
 
-        // 2️⃣ Actualizar la última posición
+        // Actualizar la última posición
         await this.positionModel.findOneAndUpdate(
             { vehicleId },
             {
