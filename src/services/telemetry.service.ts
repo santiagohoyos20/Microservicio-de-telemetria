@@ -3,6 +3,8 @@ import { VehiclePosition, VehiclePositionDocument } from 'src/infrastructure/veh
 import { InjectModel } from '@nestjs/mongoose';
 import { VehicleHistory, VehicleHistoryDocument } from 'src/infrastructure/vehicle-history.schema';
 import { Model } from 'mongoose';
+import { CurrentPositionDto } from 'src/domain/dto/current-position.dto';
+import { last } from 'rxjs';
 
 @Injectable()
 export class TelemetryService {
@@ -35,4 +37,20 @@ export class TelemetryService {
 
         return { ok: true, message: 'Ubicación registrada correctamente' };
     }
+
+    async getCurrentPosition(vehicleId: string): Promise<CurrentPositionDto | null> {
+    const record = await this.positionModel
+      .findOne({ vehicleId })
+      .sort({ lastUpdate: -1 }) // última posición
+      .exec();
+
+    if (!record) return null;
+
+    return {
+      vehicleId: record.vehicleId,
+      lng: record.location.coordinates[0],
+      lat: record.location.coordinates[1],
+      timestamp: record.lastUpdate,
+    };
+  }
 }
