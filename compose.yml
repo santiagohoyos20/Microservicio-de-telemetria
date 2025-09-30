@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: telemetry_db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: telemetry
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: pass
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--username", "user", "--password", "pass", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: node:20
+    container_name: telemetry_app
+    restart: unless-stopped
+    working_dir: /usr/src/app
+    volumes:
+      - ./:/usr/src/app    # carpeta del proyecto NestJS
+      - /usr/src/app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    command: >
+      sh -c "
+        npm install &&
+        npm run start:dev
+      "
+
+volumes:
+  mongo_data:

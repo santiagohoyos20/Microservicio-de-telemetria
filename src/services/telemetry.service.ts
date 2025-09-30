@@ -48,6 +48,7 @@ export class TelemetryService {
 
     return {
       vehicleId: record.vehicleId,
+      // [lng, lat]
       lng: record.location.coordinates[0],
       lat: record.location.coordinates[1],
       timestamp: record.lastUpdate,
