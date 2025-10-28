@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { VehiclePosition, VehiclePositionDocument } from 'src/infrastructure/vehicle-positions.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { VehicleHistory, VehicleHistoryDocument } from 'src/infrastructure/vehicle-history.schema';
@@ -8,37 +8,41 @@ import { last } from 'rxjs';
 
 @Injectable()
 export class TelemetryService {
-    constructor(
-        @InjectModel(VehicleHistory.name)
-        private historyModel: Model<VehicleHistoryDocument>,
+  constructor(
+    @InjectModel(VehicleHistory.name)
+    private historyModel: Model<VehicleHistoryDocument>,
 
-        @InjectModel(VehiclePosition.name)
-        private positionModel: Model<VehiclePositionDocument>,
-    ) { }
+    @InjectModel(VehiclePosition.name)
+    private positionModel: Model<VehiclePositionDocument>,
+  ) { }
 
-    async registerLocation(vehicleId: string, lng: number, lat: number) {
-        // Guardar en histórico
-        await this.historyModel.create({
-            vehicleId,
-            location: { type: 'Point', coordinates: [lng, lat] },
-            timestamp: new Date(),
-        });
-
-        // Actualizar la última posición
-        await this.positionModel.findOneAndUpdate(
-            { vehicleId },
-            {
-                vehicleId,
-                location: { type: 'Point', coordinates: [lng, lat] },
-                lastUpdate: new Date(),
-            },
-            { upsert: true, new: true } // Crea el documento si no existe
-        );
-
-        return { ok: true, message: 'Ubicación registrada correctamente' };
+  async registerLocation(vehicleId: string, lng: number, lat: number) {
+    if (!vehicleId || lng === undefined || lat === undefined) {
+      throw new BadRequestException('Parámetros inválidos');
     }
 
-    async getCurrentPosition(vehicleId: string): Promise<CurrentPositionDto | null> {
+    // Guardar en histórico
+    await this.historyModel.create({
+      vehicleId,
+      location: { type: 'Point', coordinates: [lng, lat] },
+      timestamp: new Date(),
+    });
+
+    // Actualizar la última posición
+    await this.positionModel.findOneAndUpdate(
+      { vehicleId },
+      {
+        vehicleId,
+        location: { type: 'Point', coordinates: [lng, lat] },
+        lastUpdate: new Date(),
+      },
+      { upsert: true, new: true } // Crea el documento si no existe
+    );
+
+    return { ok: true, message: 'Ubicación registrada correctamente' };
+  }
+
+  async getCurrentPosition(vehicleId: string): Promise<CurrentPositionDto | null> {
     const record = await this.positionModel
       .findOne({ vehicleId })
       .sort({ lastUpdate: -1 }) // última posición
