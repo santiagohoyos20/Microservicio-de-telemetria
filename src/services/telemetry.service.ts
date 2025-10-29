@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { VehicleHistory, VehicleHistoryDocument } from 'src/infrastructure/vehicle-history.schema';
 import { Model } from 'mongoose';
 import { CurrentPositionDto } from 'src/domain/dto/current-position.dto';
-import { last } from 'rxjs';
+
 
 @Injectable()
 export class TelemetryService {
